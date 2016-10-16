@@ -1,0 +1,19 @@
+{% from "_formhelpers.html" import render_field %}
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Edit User {{user.name}}</title>
+  </head>
+  <body>
+<h2>Edit User {{user.name}}</h2><br>
+    <form method="post">
+      <dl>
+       {{ render_field(form.name) }} <br>
+       {{ render_field(form.email) }} <br>
+      {{ render_field(form.password) }} <br>
+      </dl>
+      <input type="submit" name="name" value="Edit">
+    </form>
+  </body>
+</html>
