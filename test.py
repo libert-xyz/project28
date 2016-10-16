@@ -38,8 +38,6 @@ class FlaskrTestCase(unittest.TestCase):
     #Test admin page render
 
     def test_admin_page(self):
-        rz = self.create_user()
-        rv = self.login('admin@root.com','sesamo')
         tester = main.app.test_client(self)
         #response = tester.get('/admin', content_type='html/text')
         response = tester.get('/admin')
