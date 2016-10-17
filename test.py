@@ -38,10 +38,14 @@ class FlaskrTestCase(unittest.TestCase):
     #Test admin page render
 
     def test_admin_page(self):
-        tester = main.app.test_client(self)
-        #response = tester.get('/admin', content_type='html/text')
-        response = tester.get('/admin')
-        self.assertIn(b'Add Users', response.data)
+
+        rv = self.create_user()
+        with self.login('admin@root.com','sesamo'):
+            #rv = self.
+            tester = main.app.test_client(self)
+            #response = tester.get('/admin', content_type='html/text')
+            response = tester.get('/admin')
+            self.assertIn(b'Add Users', response.data)
 
 
     def test_add_user(self):

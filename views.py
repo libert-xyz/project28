@@ -1,14 +1,16 @@
 from flask import render_template, url_for, request, redirect,flash
 from app import app,db
-from models import User
+from models import User, Participante
 from forms import AddUser, EditUser, LoginAdmin
 from flask_login import login_required,logout_user,login_user,current_user
-
+import os
+import httplib2
+import json
 
 
 @app.route('/')
 def index():
-    return 'Hello flask!'
+    return render_template('index.html')
 
 @app.route('/admin')
 @login_required
@@ -85,3 +87,39 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for('index'))
+
+
+@app.route('/fbconnect',methods=['POST'])
+def fbconenct():
+    access_token = request.data
+    print ("Access token FB %s" %access_token.decode())
+    #Exchange client token for long lived server-side
+
+    app_id = os.environ['face_id']
+    app_secret = os.environ['face_secret']
+    url = 'https://graph.facebook.com/oauth/access_token?grant_type=fb_exchange_token&client_id=%s&client_secret=%s&fb_exchange_token=%s' % (
+           app_id, app_secret, access_token.decode())
+
+    h = httplib2.Http()
+    result = h.request(url,'GET')[1]
+
+    #Retrieve user info with the new token
+    token = result.decode().split('&')[0]
+    url = 'https://graph.facebook.com/v2.4/me?%s&fields=name,id,email' % token
+    h = httplib2.Http()
+    fb_info = h.request(url, 'GET')[1]
+    data = json.loads(fb_info.decode())
+
+    participante = Participante(name=data['name'],email=data['email'])
+
+    db.session.add(participante)
+    db.session.commit()
+
+    print ('Facebook info: %s' %fb_info)
+
+    return 'ok'
+
+@app.route('/participantes')
+def participantes():
+    participantes = Participante.query.all()
+    return render_template('participante.html',participantes=participantes)
