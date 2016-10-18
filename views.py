@@ -1,7 +1,7 @@
 from flask import render_template, url_for, request, redirect,flash
 from app import app,db
 from models import User, Participante
-from forms import AddUser, EditUser, LoginAdmin
+from forms import AddUser, EditUser, LoginAdmin, ContestForm
 from flask_login import login_required,logout_user,login_user,current_user
 import os
 import httplib2
@@ -110,16 +110,55 @@ def fbconenct():
     fb_info = h.request(url, 'GET')[1]
     data = json.loads(fb_info.decode())
 
+    # participante = Participante(name=data['name'],email=data['email'])
+    #
+    # db.session.add(participante)
+    # db.session.commit()
+
+    print ('Facebook info: %s' %fb_info)
+
+    #return redirect(url_for('participantes',data=data))
+    participantes(data)
+    return 'ok'
+
+#@app.route('/participantes/<data>')
+def participantes(data):
+    # participantes = Participante.query.all()
+    # return render_template('participante.html',participantes=participantes)
+    print (data)
     participante = Participante(name=data['name'],email=data['email'])
 
     db.session.add(participante)
     db.session.commit()
+    return redirect(url_for('contest',id=participante.id))
 
-    print ('Facebook info: %s' %fb_info)
 
-    return 'ok'
-
-@app.route('/participantes')
-def participantes():
+@app.route('/showParticipantes')
+def showParticipantes():
     participantes = Participante.query.all()
     return render_template('participante.html',participantes=participantes)
+
+@app.route('/deleteParticipante/<int:id>',methods=['GET','POST'])
+def deleteParticipante(id):
+    p = Participante.query.filter_by(id=id).one()
+    if request.method == 'POST':
+        db.session.delete(p)
+        db.session.commit()
+        flash('Participante Deleted')
+        return redirect(url_for('showParticipantes'))
+
+    return render_template('deleteparticipante.html',p=p)
+
+@app.route('/contest/<int:id>',methods=['GET','POST'])
+def contest(id):
+    form = ContestForm(request.form)
+    participante = Participante.query.filter_by(id=id).one()
+    if request.method == 'POST':
+        participante.text = form.text.data
+        participante.phone = form.phone.data
+        db.session.add(participante)
+        db.session.commit()
+        flash('Thank for this')
+        return redirect(url_for('showParticipantes'))
+
+    return render_template('contest.html',form=form,participante=participante)

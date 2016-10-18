@@ -8,18 +8,22 @@
 
     <table border="1">
       <tr>
+        <th>Id</th>
         <th>Name</th>
         <th>Email</th>
-        <th>Edit</th>
+        <th>Phone</th>
+        <th>Text</th>
         <th>Delete</th>
       </tr>
     {%for i in participantes %}
 
           <tr>
+            <td>{{i.id}}</td>
             <td>{{i.name}}</td>
             <td>{{i.email}}</td>
-            <td><a href="{{url_for('edit_user',id=i.id)}}">Edit</a></td>
-            <td><a href="{{url_for('delete_user',id=i.id)}}">Delete</a></td>
+            <td>{{i.phone}}</td>
+            <td>{{i.text}}</td>
+            <td><a href="{{url_for('deleteParticipante',id=i.id)}}">Delete</a></td>
           </tr>
     {% endfor%}
     </table>
