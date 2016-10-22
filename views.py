@@ -6,7 +6,7 @@ from flask_login import login_required,logout_user,login_user,current_user
 import os
 import httplib2
 import json
-
+from flask import session as login_session
 
 @app.route('/')
 def index():
@@ -14,7 +14,6 @@ def index():
 
 @app.route('/admin')
 @login_required
-
 def admin():
     users = User.query.all()
     return render_template('admin.html',users=users)
@@ -100,6 +99,8 @@ def fbconenct():
     url = 'https://graph.facebook.com/oauth/access_token?grant_type=fb_exchange_token&client_id=%s&client_secret=%s&fb_exchange_token=%s' % (
            app_id, app_secret, access_token.decode())
 
+
+
     h = httplib2.Http()
     result = h.request(url,'GET')[1]
 
@@ -109,6 +110,18 @@ def fbconenct():
     h = httplib2.Http()
     fb_info = h.request(url, 'GET')[1]
     data = json.loads(fb_info.decode())
+    login_session['username'] = data['name']
+    login_session['email'] = data['email']
+    login_session['facebook_id'] = data['id']
+    login_session['access_token'] = access_token
+
+    #Get User Picture
+    url = 'https://graph.facebook.com/v2.4/me/picture?%s&redirect=0&height=200&width=200' % token
+    h = httplib2.Http()
+    picture_result = h.request(url,'GET')[1]
+    data_picture = json.loads(picture_result.decode())
+    login_session['picture'] = data_picture['data']['url']
+
 
     # participante = Participante(name=data['name'],email=data['email'])
     #
@@ -118,23 +131,32 @@ def fbconenct():
     print ('Facebook info: %s' %fb_info)
 
     #return redirect(url_for('participantes',data=data))
-    participantes(data)
-    return 'ok'
+
+    return participantes(data)
 
 #@app.route('/participantes/<data>')
 def participantes(data):
     # participantes = Participante.query.all()
     # return render_template('participante.html',participantes=participantes)
+
+
     print (data)
-    participante = Participante(name=data['name'],email=data['email'])
+    try:
+        Participante.query.filter_by(email=data['email']).one()
+        return redirect(url_for('contest'))
 
-    db.session.add(participante)
-    db.session.commit()
-    return redirect(url_for('contest',id=participante.id))
 
+    except:
+        participante = Participante(name=data['name'],email=data['email'])
+        #login_session['email'] = data['email']
+        db.session.add(participante)
+        db.session.commit()
+        return redirect(url_for('contest'))
 
 @app.route('/showParticipantes')
 def showParticipantes():
+    #login_session['email']
+
     participantes = Participante.query.all()
     return render_template('participante.html',participantes=participantes)
 
@@ -144,21 +166,37 @@ def deleteParticipante(id):
     if request.method == 'POST':
         db.session.delete(p)
         db.session.commit()
+
         flash('Participante Deleted')
+        del login_session['username']
+        del login_session['email']
+        del login_session['facebook_id']
+        del login_session['access_token']
+
         return redirect(url_for('showParticipantes'))
 
     return render_template('deleteparticipante.html',p=p)
 
-@app.route('/contest/<int:id>',methods=['GET','POST'])
-def contest(id):
-    form = ContestForm(request.form)
-    participante = Participante.query.filter_by(id=id).one()
-    if request.method == 'POST':
-        participante.text = form.text.data
-        participante.phone = form.phone.data
-        db.session.add(participante)
-        db.session.commit()
-        flash('Thank for this')
-        return redirect(url_for('showParticipantes'))
+#@app.route('/contest/<email>',methods=['GET','POST'])
+@app.route('/contest',methods=['GET','POST'])
+def contest():
+    if 'email' in login_session:
+        form = ContestForm(request.form)
+        print ('LOGIN SESSION: %s' %login_session)
+        participante = Participante.query.filter_by(email=login_session['email']).one()
 
-    return render_template('contest.html',form=form,participante=participante)
+        if participante.text == None:
+            if request.method == 'POST':
+                participante.text = form.text.data
+                participante.phone = form.phone.data
+                db.session.add(participante)
+                db.session.commit()
+                flash('Thank for participate')
+                return render_template('incontest.html',participante=participante,picture=login_session['picture'])
+
+            return render_template('contest.html',form=form,participante=participante,picture=login_session['picture'])
+        else:
+            return render_template('incontest.html',participante=participante,picture=login_session['picture'])
+
+    else:
+        return redirect(url_for('index'))

@@ -59,15 +59,15 @@
       success: function(result) {
         // Handle or verify the server response if necessary.
         if (result) {
-          console.log(success);
+          console.log('success');
 
-        //   $('#result').html('Login Successful!</br>'+ result + '</br>Redirecting...')
-        //  setTimeout(function() {
-        //   window.location.href = "/contest";
-        //  }, 4000);
+          $('#result').html('Login Successful!</br>'+ result + '</br>Redirecting...')
+         setTimeout(function() {
+          window.location.href = "/contest";
+        }, 2000);
 
       } else {
-        // $('#result').html('Failed to make a server-side call. Check your configuration and console.');
+        $('#result').html('Failed to make a server-side call. Check your configuration and console.');
         console.log(failed);
          }
       }

@@ -1,4 +1,4 @@
-from wtforms import Form, StringField, PasswordField, validators, IntegerField
+from wtforms import Form, StringField, PasswordField, validators, IntegerField, TextAreaField
 
 class AddUser(Form):
     name = StringField('Username',[validators.Length(min=4, max=80)])
@@ -30,4 +30,4 @@ class LoginAdmin(Form):
 
 class ContestForm(Form):
     phone = IntegerField('Phone',[validators.Length(min=10,max=13)])
-    text =  StringField('Text',[validators.Length(min=18, max=40)])
+    text =  TextAreaField('Text',[validators.Length(min=18, max=40)])
