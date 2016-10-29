@@ -40,9 +40,9 @@ class Participante(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50))
     email = db.Column(db.String(50),unique=True)
-    avatar = db.Column(db.String(50))
     phone = db.Column(db.String(50))
     text = db.Column(db.Text)
+    votes = db.Column(db.Integer,default=0)
     upload = db.Column(db.String(150))
 
     def __init__(self,name,email):

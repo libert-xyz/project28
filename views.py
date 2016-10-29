@@ -12,12 +12,6 @@ from flask import session as login_session
 def index():
     return render_template('index.html')
 
-@app.route('/admin')
-@login_required
-def admin():
-    users = User.query.all()
-    return render_template('admin.html',users=users)
-
 @app.route('/add', methods=['GET','POST'])
 def add_users():
     form = AddUser(request.form)
@@ -76,10 +70,31 @@ def login():
         if user.verify_password(form.password.data):
             login_user(user)
             flash('Welcome')
-            return redirect(url_for('admin'))
+            return redirect(url_for('judge'))
         else:
             return 'Invalid User or Password'
     return render_template('login.html',form=form)
+
+
+@app.route('/judge')
+@login_required
+def judge():
+    participantes = Participante.query.all()
+    users = User.query.all()
+    picture = login_session['picture']
+    return render_template('admin.html',users=users)
+
+    #return render_template('judge.html',participantes=participantes,picture=picture)
+
+@app.route('/vote/<int:id>')
+def vote(id):
+    participante = Participante.query.filter_by(id=id).one()
+    participante.votes = participante.votes +  4
+    db.session.add(participante)
+    db.session.commit()
+    return 'ok'
+
+
 
 @app.route("/logout")
 @login_required
