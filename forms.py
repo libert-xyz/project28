@@ -1,4 +1,4 @@
-from wtforms import Form, StringField, PasswordField, validators, IntegerField, TextAreaField
+from wtforms import Form, StringField, PasswordField, validators, IntegerField, TextAreaField,SelectField
 
 class AddUser(Form):
     name = StringField('Username',[validators.Length(min=4, max=80)])
@@ -12,6 +12,7 @@ class AddUser(Form):
 
 
 class EditUser(Form):
+    role = SelectField(choices=[('admin', 'Admin'), ('judge', 'Judge'),('visitor','Visitor')])
     name = StringField('Username',[validators.Length(min=4, max=80)])
     email =  StringField('Email',[validators.Length(min=8, max=40)])
     password = PasswordField('Password', [

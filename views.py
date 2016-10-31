@@ -22,7 +22,7 @@ def add_users():
         db.session.add(user)
         db.session.commit()
         flash('User Added')
-        return redirect(url_for('admin'))
+        return redirect(url_for('judge'))
 
     return render_template('adduser.html',form=form)
 
@@ -33,6 +33,9 @@ def edit_user(id):
     user = User.query.filter_by(id=id).one()
 
     if request.method == 'POST':
+
+        if form.role.data:
+            user.role = form.role.data
         if form.email.data:
             user.email = form.email.data
         if form.name.data:
@@ -43,7 +46,7 @@ def edit_user(id):
         db.session.add(user)
         db.session.commit()
         flash('User Edited')
-        return redirect(url_for('admin'))
+        return redirect(url_for('judge'))
 
     return render_template('edituser.html',form=form,user=user)
 
@@ -79,10 +82,21 @@ def login():
 @app.route('/judge')
 @login_required
 def judge():
+    print ('CURRENT USER: %s' %current_user.name )
+    print ('CURRENT ROLE: %s' %current_user.role )
+
     participantes = Participante.query.all()
-    users = User.query.all()
-    picture = login_session['picture']
-    return render_template('admin.html',users=users)
+
+    if current_user.role == 'admin':
+        users = User.query.all()
+        #picture = login_session['picture']
+        return render_template('admin.html',users=users)
+    elif current_user.role == 'judge':
+        return render_template('judge.html',participantes=participantes)
+
+    elif current_user.role == 'visitor':
+        return render_template('visitor.html',participantes=participantes)
+
 
     #return render_template('judge.html',participantes=participantes,picture=picture)
 

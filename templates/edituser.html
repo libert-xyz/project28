@@ -9,6 +9,7 @@
 <h2>Edit User {{user.name}}</h2><br>
     <form method="post">
       <dl>
+       {{ render_field(form.role) }} <br>
        {{ render_field(form.name) }} <br>
        {{ render_field(form.email) }} <br>
       {{ render_field(form.password) }} <br>

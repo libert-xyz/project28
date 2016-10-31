@@ -1,10 +1,20 @@
 from app import db
 from passlib.apps import custom_app_context as pwd_context
+from sqlalchemy_utils import ChoiceType
+#from babel import lazy_gettext as _
+
 class User(db.Model):
+    TYPES = [
+            (u'admin', u'Admin'),
+            (u'judge', u'Judge'),
+            (u'visitor',u'Visitor')
+    ]
     id = db.Column(db.Integer,primary_key=True)
     name = db.Column(db.String(80))
     email = db.Column(db.String(40), unique=True)
     password = db.Column(db.String(100))
+    role = db.Column(ChoiceType(TYPES))
+
 
     def __init__(self, name):
         self.name = name

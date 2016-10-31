@@ -5,9 +5,8 @@
     <title>Judge</title>
   </head>
   <body>
-
     <div class = 'flash'>
-		      {% with messages = get_flashed_messages() %}
+          {% with messages = get_flashed_messages() %}
       {% if messages %}
 
         <ul>
@@ -26,8 +25,7 @@
     <br>
     <a href="{{url_for('logout')}}">LogOut</a> <br>
 
-
-    <h1>Vote for Participants</h1>
+    <h1>Just Visitor</h1>
     <table border="1">
       <tr>
         <th></th>
@@ -36,8 +34,6 @@
         <th>Email</th>
         <th>Phone</th>
         <th>Text</th>
-        <th>Votes</th>
-        <th>Vote</th>
       </tr>
     {%for i in participantes %}
 
@@ -48,8 +44,6 @@
             <td>{{i.email}}</td>
             <td>{{i.phone}}</td>
             <td>{{i.text}}</td>
-            <td>{{i.votes}}</td>
-            <td><a href="{{url_for('vote',id=i.id)}}">Vote</a></td>
           </tr>
     {% endfor%}
     </table>
