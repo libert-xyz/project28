@@ -17,6 +17,7 @@ def add_users():
     form = AddUser(request.form)
     if request.method == 'POST' and form.validate():
         user = User(name=form.name.data)
+        user.role = form.role.data
         user.email = (form.email.data)
         user.password_hash(form.password.data)
         db.session.add(user)
@@ -59,7 +60,7 @@ def delete_user(id):
         db.session.delete(user)
         db.session.commit()
         flash('User Deleted')
-        return redirect(url_for('admin'))
+        return redirect(url_for('judge'))
 
     return render_template('deleteuser.html',user=user)
 

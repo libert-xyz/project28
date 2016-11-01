@@ -7,6 +7,8 @@ import sqlalchemy
 import unittest
 from models import User
 from flask import url_for
+from flask_login import current_user
+
 #import tempfile
 #from models import User
 
@@ -50,7 +52,7 @@ class FlaskrTestCase(unittest.TestCase):
     #     #assert 'Welcome' in rv.data.
     #     self.assertIn(b'Welcome', response.data)
 
-
+    #Test admin
     def test_users_can_login(self):
         #User.create(email='admin@joes.com', password='12345')
         u = User(name='admin')
@@ -61,11 +63,30 @@ class FlaskrTestCase(unittest.TestCase):
         db.session.commit()
 
         #tester = main.app.test_client(self)
-        response = self.app.post('/login',
-                                    data={'email': 'admin@joes.com', 'password': 'sesamo'},
-                                    follow_redirects=True)
-        #self.assert_redirects(response, url_for('judge'))
-        self.assertIn(b'Welcome', response.data)
+        with self.app:
+            response = self.app.post('/login',
+                                        data={'email': 'admin@joes.com', 'password': 'sesamo'},
+                                        follow_redirects=True)
+            self.assertIn(b'Hi admin!', response.data)
+            self.assertTrue(current_user.name == 'admin')
+            self.assertFalse(current_user.is_anonymous)
+
+    def test_admin_can_logout(self):
+
+        u = User(name='admin')
+        u.email='admin@joes.com'
+        u.password_hash('sesamo')
+        u.role = 'admin'
+        db.session.add(u)
+        db.session.commit()
+
+        with self.app:
+            response = self.app.post('/login',
+                                        data={'email': 'admin@joes.com', 'password': 'sesamo'},
+                                        follow_redirects=True)
+            #self.assert_redirects(response, url_for('index'))
+            self.app.get(url_for('logout'))
+            self.assertTrue(current_user.is_anonymous)
 
 
     #Test admin page render
