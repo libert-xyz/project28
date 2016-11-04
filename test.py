@@ -39,19 +39,6 @@ class FlaskrTestCase(unittest.TestCase):
         db.session.commit()
         return u
 
-    # def login(self,email,password):
-    #     return self.app.post('/login', data=dict(
-    #         email=email,
-    #         password=password
-    #     ), follow_redirects=True)
-
-    # def test_login(self):
-    #     rv = self.create_initial_user()
-    #     #response = self.login('admin@root.com','sesamo')
-    #     response = self.app.post('/login', data=dict(email=rv.email,password=rv.password),follow_redirects=True)
-    #     #assert 'Welcome' in rv.data.
-    #     self.assertIn(b'Welcome', response.data)
-
     #Test admin
     def test_users_can_login(self):
         #User.create(email='admin@joes.com', password='12345')
@@ -87,6 +74,129 @@ class FlaskrTestCase(unittest.TestCase):
             #self.assert_redirects(response, url_for('index'))
             self.app.get(url_for('logout'))
             self.assertTrue(current_user.is_anonymous)
+
+    def test_admin_can_add_users_render(self):
+
+        u = User(name='admin')
+        u.email='admin@joes.com'
+        u.password_hash('sesamo')
+        u.role = 'admin'
+        db.session.add(u)
+        db.session.commit()
+
+        #with self.app:
+        with self.app.post('/login',
+                                    data={'email': 'admin@joes.com', 'password': 'sesamo'},
+                                    follow_redirects=True):
+                #self.assert_redirects(response, url_for('index'))
+
+            get = self.app.get('/add')
+            self.assertIn(b'Add Users', get.data)
+
+
+    def test_admin_can_add_users(self):
+
+        u = User(name='admin')
+        u.email='admin@joes.com'
+        u.password_hash('sesamo')
+        u.role = 'admin'
+        db.session.add(u)
+        db.session.commit()
+
+        with self.app:
+            with self.app.post('/login',
+                                        data={'email': 'admin@joes.com', 'password': 'sesamo'},
+                                        follow_redirects=True):
+                    #self.assert_redirects(response, url_for('index'))
+                add = self.app.post('/add',data={'role':'visitor', 'name':'test','email':'test@test.com','password':'sesamo',
+                                        'confirm':'sesamo'},follow_redirects=True)
+
+                self.assertIn(b'User Added', add.data)
+                self.assertIn(b'test@test.com', add.data)
+
+
+    def test_admin_can_edit_users(self):
+
+        u = User(name='admin')
+        u.email='admin@joes.com'
+        u.password_hash('sesamo')
+        u.role = 'admin'
+        db.session.add(u)
+        db.session.commit()
+
+        with self.app:
+            with self.app.post('/login',
+                                        data={'email': 'admin@joes.com', 'password': 'sesamo'},
+                                        follow_redirects=True):
+                    #self.assert_redirects(response, url_for('index'))
+                with self.app.post('/add',data={'role':'visitor', 'name':'test','email':'test@test.com','password':'sesamo',
+                            'confirm':'sesamo'},follow_redirects=True):
+
+
+                            edit = self.app.post(url_for('edit_user',id=2),data={'email':'test@root.com','role':'judge'},follow_redirects=True)
+                            self.assertIn(b'test@root.com',edit.data)
+                            self.assertIn(b'value=Judge',edit.data)
+
+
+    def test_admin_can_delete_users(self):
+
+        u = User(name='admin')
+        u.email='admin@joes.com'
+        u.password_hash('sesamo')
+        u.role = 'admin'
+        db.session.add(u)
+        db.session.commit()
+
+        with self.app:
+            with self.app.post('/login',
+                                        data={'email': 'admin@joes.com', 'password': 'sesamo'},
+                                        follow_redirects=True):
+                    #self.assert_redirects(response, url_for('index'))
+                with self.app.post('/add',data={'role':'visitor', 'name':'test','email':'test@test.com','password':'sesamo',
+                            'confirm':'sesamo'},follow_redirects=True):
+
+
+                            delete = self.app.post(url_for('delete_user',id=2),follow_redirects=True)
+                            self.assertIn(b'User Deleted',delete.data)
+                            #self.assertIn(b'value=Judge',edit.data)
+
+    def test_admin_can_delete_users(self):
+
+        u = User(name='admin')
+        u.email='admin@joes.com'
+        u.password_hash('sesamo')
+        u.role = 'admin'
+        db.session.add(u)
+        db.session.commit()
+
+        with self.app:
+            with self.app.post('/login',
+                                        data={'email': 'admin@joes.com', 'password': 'sesamo'},
+                                        follow_redirects=True):
+                    #self.assert_redirects(response, url_for('index'))
+                with self.app.post('/add',data={'role':'visitor', 'name':'test','email':'test@test.com','password':'sesamo',
+                            'confirm':'sesamo'},follow_redirects=True):
+
+
+                            delete = self.app.post(url_for('delete_user',id=2),follow_redirects=True)
+                            self.assertIn(b'User Deleted',delete.data)
+                            #self.assertIn(b'value=Judge',edit.data)
+
+    def test_judge_login(self):
+
+        u = User(name='admin')
+        u.email='judge@joes.com'
+        u.password_hash('sesamo')
+        u.role = 'judge'
+        db.session.add(u)
+        db.session.commit()
+
+        with self.app:
+            with self.app.post('/login',data={'email': 'judge@joes.com', 'password': 'sesamo'},follow_redirects=True):
+                get = self.app.get('/judge')
+                self.assertIn(b'Vote for Participants',get.data)
+
+
 
 
     #Test admin page render

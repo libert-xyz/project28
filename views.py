@@ -13,9 +13,11 @@ def index():
     return render_template('index.html')
 
 @app.route('/add', methods=['GET','POST'])
+@login_required
 def add_users():
     form = AddUser(request.form)
     if request.method == 'POST' and form.validate():
+    #if request.method == 'POST':
         user = User(name=form.name.data)
         user.role = form.role.data
         user.email = (form.email.data)
@@ -28,7 +30,7 @@ def add_users():
     return render_template('adduser.html',form=form)
 
 @app.route('/user/edit/<int:id>',methods=['GET','POST'])
-
+@login_required
 def edit_user(id):
     form = EditUser(request.form)
     user = User.query.filter_by(id=id).one()
@@ -54,6 +56,7 @@ def edit_user(id):
 
 
 @app.route('/user/delete/<int:id>',methods=['GET','POST'])
+@login_required
 def delete_user(id):
     user = User.query.filter_by(id=id).one()
     if request.method == 'POST':
